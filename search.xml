@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search> 
+  
+  
+    
+    <entry>
+      <title>虚幻引擎术语</title>
+      <link href="/WangSnowchen.github.io/2023/03/10/%E8%99%9A%E5%B9%BB%E5%BC%95%E6%93%8E%E6%9C%AF%E8%AF%AD%E8%A1%A8/"/>
+      <url>/WangSnowchen.github.io/2023/03/10/%E8%99%9A%E5%B9%BB%E5%BC%95%E6%93%8E%E6%9C%AF%E8%AF%AD%E8%A1%A8/</url>
+      
+        <content type="html"><![CDATA[<p><img src="https://img.shields.io/badge/Author-wangxuechen-blue.svg"><br><a href=""><img src="https://img.shields.io/badge/UnrealEngine-4.27.2-9cf&?logo=Unreal Engine" alt="点击前往"/></a></p><blockquote><p>虚幻引擎中常见的术语简介及补充</p></blockquote><span id="more"></span><hr><table><thead><tr><th align="center">虚幻引擎术语</th><th align="center">简介</th></tr></thead><tbody><tr><td align="center">项目（Project）</td><td align="center">保存着构成游戏所需要的所有内容和代码</td></tr><tr><td align="center">内容浏览器（Content Browser）</td><td align="center">虚幻编辑器的主要区域，用于在虚幻编辑器中创建、导入、组织以及查看以及修改内容资产</td></tr><tr><td align="center">蓝图（Blueprint Visual Scripting）</td><td align="center">一种功能齐全的游戏脚本系统，允许你在虚幻编辑器中通过基于节点的界面来创建游戏元素</td></tr><tr><td align="center">对象（Object）</td><td align="center">在虚幻引擎中，最基本的类叫做Object</td></tr><tr><td align="center">类（Class）</td><td align="center">用于定义虚幻引擎中Actor或对象的行为和属性</td></tr><tr><td align="center">Actor</td><td align="center">所有可以放入关卡的对象都是Actor</td></tr><tr><td align="center">类型转换（Casting）</td><td align="center">获取某个特定的Actor（或类），然后将它视为另一种类进行处理</td></tr><tr><td align="center">组件（Component）</td><td align="center">组件是可以添加到Actor上的一项功能</td></tr><tr><td align="center">Pawn</td><td align="center">Pawn是Actor的子类，它可以充当游戏中的化身或人物（列如游戏中的角色）</td></tr><tr><td align="center">角色（Character）</td><td align="center">角色是Pawn Actor的子类，旨在用作玩家角色</td></tr><tr><td align="center">玩家控制器（Player Controller）</td><td align="center">玩家控制器会获取游戏中玩家的输入信息，然后转为交互效果，每个游戏中至少有一个玩家控制器</td></tr><tr><td align="center">AI控制器（AIController）</td><td align="center">玩家控制器通过控制Pawn来表示游戏中的玩家，与此类似，AI控制器通过控制Pawn来表示游戏中的非玩家角色（NPC）</td></tr><tr><td align="center">玩家状态（PlayerState）</td><td align="center">表示某个游戏参与者的状态，可以是人类玩家，也可以是模拟玩家的机器人</td></tr><tr><td align="center">游戏模式（GameMode）</td><td align="center">游戏模式类负责设置当前游戏的规则</td></tr><tr><td align="center">游戏状态（GameState）</td><td align="center">一种容器，保存着你希望在游戏中复制给每个客户端的信息</td></tr><tr><td align="center">笔刷（Brush）</td><td align="center">是一种Actor，用于描述一个3D几何体。例如方形或圆形</td></tr><tr><td align="center">体积（Volumes）</td><td align="center">是一种存在边框的3D空间，会根据施加给它们的效果产生不同的用途</td></tr><tr><td align="center">关卡（Level）</td><td align="center">是用户定义的游戏区域</td></tr><tr><td align="center">世界（World）</td><td align="center">是一个容器，包含了游戏中的所有关卡</td></tr></tbody></table><blockquote><p>参考文档：<a href="https://docs.unrealengine.com/4.27/zh-CN/Basics/UnrealEngineTerminology/">虚幻引擎4术语</a></p></blockquote>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> unrealengine </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+  
+  
+</search>
