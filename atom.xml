@@ -6,7 +6,7 @@
   <link href="https://wangsnowchen.github.io/WangSnowchen.github.io/atom.xml" rel="self"/>
   
   <link href="https://wangsnowchen.github.io/WangSnowchen.github.io/"/>
-  <updated>2023-03-10T14:21:53.388Z</updated>
+  <updated>2023-03-10T16:31:24.547Z</updated>
   <id>https://wangsnowchen.github.io/WangSnowchen.github.io/</id>
   
   <author>
@@ -15,6 +15,27 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Maya后台批量渲染脚本</title>
+    <link href="https://wangsnowchen.github.io/WangSnowchen.github.io/2023/03/11/Maya%E5%90%8E%E5%8F%B0%E6%89%B9%E9%87%8F%E6%B8%B2%E6%9F%93%E8%84%9A%E6%9C%AC/"/>
+    <id>https://wangsnowchen.github.io/WangSnowchen.github.io/2023/03/11/Maya%E5%90%8E%E5%8F%B0%E6%89%B9%E9%87%8F%E6%B8%B2%E6%9F%93%E8%84%9A%E6%9C%AC/</id>
+    <published>2023-03-10T16:00:00.000Z</published>
+    <updated>2023-03-10T16:31:24.547Z</updated>
+    
+    <content type="html"><![CDATA[<p>Maya后台批量渲染脚本</p><span id="more"></span><p>今天有前同事问我有没有maya和nuke的后台批量渲染脚本，记得之前有看着官方文档写过一些。于是把之前写的文档整理出来，翻新重新挂在新博客上以下举例以<strong>maya+arnold</strong> 如果你使用了一些别的渲染器，那么你就要去查看相应的官方文档，看对应的命令行特定标志该怎么写<br>贴一个Arnold的批渲染，<a href="https://help.autodesk.com/view/ARNOL/ENU/?guid=arnold_for_maya_rendering_am_Batch_Rendering_html">点击前往</a><br>再贴一个maya批渲染的地址，<a href="https://help.autodesk.com/view/MAYAUL/2022/ENU/?guid=GUID-EB558BC0-5C2B-439C-9B00-F97BCB9688E4">点击前往</a></p><p>首先直接给出一个可以直接用的渲染脚本</p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;C:\Program Files\Autodesk\Maya2023\bin\Render.exe&quot;</span> -r ar -v 001 -s <span class="number">1001</span> -e <span class="number">1002</span> -rd C:\<span class="string">&quot;输出图像路径&quot;</span> <span class="string">&quot;maya文件.mb/.ma&quot;</span></span><br></pre></td></tr></table></figure><p>上面就是用maya2023的Arnold渲染器渲染出的一个V005版的从1001帧到1002帧的批渲染脚本</p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;C:\Program Files\Autodesk\Maya2023\bin\Render.exe&quot;</span> -r ar <span class="comment">#这一段代表着具体用哪个maya版本和渲染器 Arnold为‘ar’，redshift为‘rd’</span></span><br></pre></td></tr></table></figure>]]></content>
+    
+    
+    <summary type="html">&lt;p&gt;Maya后台批量渲染脚本&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="Maya" scheme="https://wangsnowchen.github.io/WangSnowchen.github.io/tags/Maya/"/>
+    
+    <category term="CMD" scheme="https://wangsnowchen.github.io/WangSnowchen.github.io/tags/CMD/"/>
+    
+  </entry>
   
   <entry>
     <title>虚幻引擎术语</title>
