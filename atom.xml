@@ -6,7 +6,7 @@
   <link href="https://wangsnowchen.github.io/WangSnowchen.github.io/atom.xml" rel="self"/>
   
   <link href="https://wangsnowchen.github.io/WangSnowchen.github.io/"/>
-  <updated>2023-03-10T11:25:56.260Z</updated>
+  <updated>2023-03-10T13:21:42.756Z</updated>
   <id>https://wangsnowchen.github.io/WangSnowchen.github.io/</id>
   
   <author>
@@ -17,42 +17,19 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>About</title>
-    <link href="https://wangsnowchen.github.io/WangSnowchen.github.io/2023/03/10/post/"/>
-    <id>https://wangsnowchen.github.io/WangSnowchen.github.io/2023/03/10/post/</id>
-    <published>2023-03-10T11:25:26.000Z</published>
-    <updated>2023-03-10T11:25:56.260Z</updated>
-    
-    
-    
-    
-    
-  </entry>
-  
-  <entry>
-    <title>Any Title</title>
-    <link href="https://wangsnowchen.github.io/WangSnowchen.github.io/2023/03/10/any-title/"/>
-    <id>https://wangsnowchen.github.io/WangSnowchen.github.io/2023/03/10/any-title/</id>
-    <published>2023-03-10T11:21:33.000Z</published>
-    <updated>2023-03-10T11:21:33.118Z</updated>
-    
-    
-    
-    
-    
-  </entry>
-  
-  <entry>
-    <title>Hello World</title>
-    <link href="https://wangsnowchen.github.io/WangSnowchen.github.io/2023/03/10/hello-world/"/>
-    <id>https://wangsnowchen.github.io/WangSnowchen.github.io/2023/03/10/hello-world/</id>
+    <title>虚幻引擎术语</title>
+    <link href="https://wangsnowchen.github.io/WangSnowchen.github.io/2023/03/10/%E8%99%9A%E5%B9%BB%E5%BC%95%E6%93%8E%E6%9C%AF%E8%AF%AD%E8%A1%A8/"/>
+    <id>https://wangsnowchen.github.io/WangSnowchen.github.io/2023/03/10/%E8%99%9A%E5%B9%BB%E5%BC%95%E6%93%8E%E6%9C%AF%E8%AF%AD%E8%A1%A8/</id>
     <published>2023-03-09T16:00:00.000Z</published>
-    <updated>2023-03-10T12:56:15.911Z</updated>
+    <updated>2023-03-10T13:21:42.756Z</updated>
     
-    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p><span id="more"></span><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>]]></content>
+    <content type="html"><![CDATA[<p><img src="https://img.shields.io/badge/Author-wangxuechen-blue.svg" alt="Author"><a href="https://space.bilibili.com/15008446"><img src="https://img.shields.io/badge/UnrealEngine-4.27.2-9cf&?logo=Unreal Engine" alt="点击前往"/></a></p><blockquote><p>虚幻引擎中常见的术语简介及补充</p></blockquote><span id="more"></span><hr><table><thead><tr><th align="center">虚幻引擎术语</th><th align="center">简介</th></tr></thead><tbody><tr><td align="center">项目（Project）</td><td align="center">保存着构成游戏所需要的所有内容和代码</td></tr><tr><td align="center">内容浏览器（Content Browser）</td><td align="center">虚幻编辑器的主要区域，用于在虚幻编辑器中创建、导入、组织以及查看以及修改内容资产</td></tr><tr><td align="center">蓝图（Blueprint Visual Scripting）</td><td align="center">一种功能齐全的游戏脚本系统，允许你在虚幻编辑器中通过基于节点的界面来创建游戏元素</td></tr><tr><td align="center">对象（Object）</td><td align="center">在虚幻引擎中，最基本的类叫做Object</td></tr><tr><td align="center">类（Class）</td><td align="center">用于定义虚幻引擎中Actor或对象的行为和属性</td></tr><tr><td align="center">Actor</td><td align="center">所有可以放入关卡的对象都是Actor</td></tr><tr><td align="center">类型转换（Casting）</td><td align="center">获取某个特定的Actor（或类），然后将它视为另一种类进行处理</td></tr><tr><td align="center">组件（Component）</td><td align="center">组件是可以添加到Actor上的一项功能</td></tr><tr><td align="center">Pawn</td><td align="center">Pawn是Actor的子类，它可以充当游戏中的化身或人物（列如游戏中的角色）</td></tr><tr><td align="center">角色（Character）</td><td align="center">角色是Pawn Actor的子类，旨在用作玩家角色</td></tr><tr><td align="center">玩家控制器（Player Controller）</td><td align="center">玩家控制器会获取游戏中玩家的输入信息，然后转为交互效果，每个游戏中至少有一个玩家控制器</td></tr><tr><td align="center">AI控制器（AIController）</td><td align="center">玩家控制器通过控制Pawn来表示游戏中的玩家，与此类似，AI控制器通过控制Pawn来表示游戏中的非玩家角色（NPC）</td></tr><tr><td align="center">玩家状态（PlayerState）</td><td align="center">表示某个游戏参与者的状态，可以是人类玩家，也可以是模拟玩家的机器人</td></tr><tr><td align="center">游戏模式（GameMode）</td><td align="center">游戏模式类负责设置当前游戏的规则</td></tr><tr><td align="center">游戏状态（GameState）</td><td align="center">一种容器，保存着你希望在游戏中复制给每个客户端的信息</td></tr><tr><td align="center">笔刷（Brush）</td><td align="center">是一种Actor，用于描述一个3D几何体。例如方形或圆形</td></tr><tr><td align="center">体积（Volumes）</td><td align="center">是一种存在边框的3D空间，会根据施加给它们的效果产生不同的用途</td></tr><tr><td align="center">关卡（Level）</td><td align="center">是用户定义的游戏区域</td></tr><tr><td align="center">世界（World）</td><td align="center">是一个容器，包含了游戏中的所有关卡</td></tr></tbody></table><blockquote><p>参考文档：<a href="https://docs.unrealengine.com/4.27/zh-CN/Basics/UnrealEngineTerminology/">虚幻引擎4术语</a></p></blockquote>]]></content>
     
     
-    <summary type="html">&lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.io/docs/&quot;&gt;documentation&lt;/a&gt; for more info. If you get any problems when using Hexo, you can find the answer in &lt;a href=&quot;https://hexo.io/docs/troubleshooting.html&quot;&gt;troubleshooting&lt;/a&gt; or you can ask me on &lt;a href=&quot;https://github.com/hexojs/hexo/issues&quot;&gt;GitHub&lt;/a&gt;.&lt;/p&gt;</summary>
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://img.shields.io/badge/Author-wangxuechen-blue.svg&quot; alt=&quot;Author&quot;&gt;&lt;a href=&quot;https://space.bilibili.com/15008446&quot;&gt;&lt;img src=&quot;https://img.shields.io/badge/UnrealEngine-4.27.2-9cf&amp;?logo=Unreal Engine&quot; alt=&quot;点击前往&quot;/&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;虚幻引擎中常见的术语简介及补充&lt;/p&gt;
+&lt;/blockquote&gt;</summary>
     
     
     
