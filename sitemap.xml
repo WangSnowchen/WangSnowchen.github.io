@@ -11,33 +11,6 @@
   </url>
   
   <url>
-    <loc>https://wangsnowchen.github.io/WangSnowchen.github.io/categories/index.html</loc>
-    
-    <lastmod>2023-03-13</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://wangsnowchen.github.io/WangSnowchen.github.io/about/index.html</loc>
-    
-    <lastmod>2023-03-13</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://wangsnowchen.github.io/WangSnowchen.github.io/tages/index.html</loc>
-    
-    <lastmod>2023-03-13</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://wangsnowchen.github.io/WangSnowchen.github.io/2023/03/10/%E8%99%9A%E5%B9%BB%E5%BC%95%E6%93%8E%E6%9C%AF%E8%AF%AD%E8%A1%A8/</loc>
     
     <lastmod>2023-03-10</lastmod>
@@ -57,6 +30,13 @@
   
   <url>
     <loc>https://wangsnowchen.github.io/WangSnowchen.github.io/tags/unrealengine/</loc>
+    <lastmod>2023-03-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://wangsnowchen.github.io/WangSnowchen.github.io/tags/C/</loc>
     <lastmod>2023-03-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
