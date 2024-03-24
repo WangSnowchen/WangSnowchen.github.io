@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://wangsnowchen.github.io</id>
+    <title>CGWiKi</title>
+    <updated>2024-03-24T15:21:56.413Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://wangsnowchen.github.io"/>
+    <link rel="self" href="https://wangsnowchen.github.io/atom.xml"/>
+    <subtitle>个人知识笔记</subtitle>
+    <logo>https://wangsnowchen.github.io/images/avatar.png</logo>
+    <icon>https://wangsnowchen.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2024, CGWiKi</rights>
+    <entry>
+        <title type="html"><![CDATA[通过CollectScenes、FilterResults和NameSwitch在已有的层次结构中填充已有的模型]]></title>
+        <id>https://wangsnowchen.github.io/post/tong-guo-collectscenes-he-filterresults-zai-yi-you-de-ceng-ci-jie-gou-zhong-tian-chong-yi-you-de-mo-xing/</id>
+        <link href="https://wangsnowchen.github.io/post/tong-guo-collectscenes-he-filterresults-zai-yi-you-de-ceng-ci-jie-gou-zhong-tian-chong-yi-you-de-mo-xing/">
+        </link>
+        <updated>2024-03-23T11:42:26.000Z</updated>
+        <content type="html"><![CDATA[<p>首先，简单介绍一下这三个节点的创建方式以及功能<br>
+<code>CollectScenes</code>可以直接在菜单中创建出来<br>
+<img src="https://wangsnowchen.github.io/post-images/1711195585321.png" alt="" loading="lazy"><br>
+通过将多个输入场景数据捆绑在一起来构建场景，每个场景都有自己的根位置。它不像组节点那样使用多个输入接口，而是使用单个输入口，并提供一个context变量，以便在每个根位置下生成不同的层次结构。这对于构建动态场景尤其有效，因为在构建节点图之前，对于输入的场景数量是未知的。<br>
+简单做个示例：<br>
+<img src="https://wangsnowchen.github.io/post-images/1711197312701.png" alt="" loading="lazy"><br>
+使用<code>CollectScenes</code>之后<br>
+<img src="https://wangsnowchen.github.io/post-images/1711197363949.png" alt="" loading="lazy"><br>
+<code>FilterResults</code>是一个隐藏节点，你可以按下↓进入节点<code>set</code>内部来获取，它可以帮你查找你在<code>PathFilter</code>中指定的内容并且给你返回一个字符串列表<br>
+<img src="https://wangsnowchen.github.io/post-images/1711198430506.png" alt="" loading="lazy"><br>
+<img src="https://wangsnowchen.github.io/post-images/1711198435115.png" alt="" loading="lazy"><br>
+<code>NameSwitch</code>可以从菜单创建</p>
+<blockquote>
+<p>在多个输入连接之间切换，通过所选的输入到输出。每个输入端都有一个 &quot;名称 &quot;和一个值，切换是通过比较名称和 selector 的值来完成的<br>
+这里的<code>selector</code>可以使用context变量来替换</p>
+</blockquote>
+<hr>
+<p>简短的讲解之后回到我们这个案例中来<br>
+<img src="https://wangsnowchen.github.io/post-images/1711207147099.png" alt="" loading="lazy">首先通过group节点构建出一个简单的层次结构<br>
+然后通过<code>FilterResults</code>求出整个root根的结构<br>
+<img src="https://wangsnowchen.github.io/post-images/1711292080612.png" alt="" loading="lazy"><br>
+可以通过python Editor来验证一下</p>
+<pre><code class="language-python">root['FilterResults']['outStrings'].getValue()
+##返回数值
+/assetA.000 /assetA.001 /assetB.000
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[使用OSL节点实现Houdini中的Clip节点功能]]></title>
+        <id>https://wangsnowchen.github.io/post/shi-yong-osl-jie-dian-shi-xian-houdini-zhong-de-clip-jie-dian-gong-neng/</id>
+        <link href="https://wangsnowchen.github.io/post/shi-yong-osl-jie-dian-shi-xian-houdini-zhong-de-clip-jie-dian-gong-neng/">
+        </link>
+        <updated>2024-03-22T15:58:01.000Z</updated>
+        <content type="html"><![CDATA[<p><img src="https://wangsnowchen.github.io/post-images/1711123128017.png" alt="" loading="lazy"><br>
+这里使用<code>OSLObject</code>节点对点属性的向量<code>P</code>进行操作<br>
+首先获取全局的<code>P</code>属性，将三维向量转换成三个对应的浮点数XYZ<br>
+<img src="https://wangsnowchen.github.io/post-images/1711123857223.png" alt="" loading="lazy"><br>
+然后对Y轴浮点数做一次判断<br>
+<img src="https://wangsnowchen.github.io/post-images/1711194002608.png" alt="" loading="lazy"><br>
+让Y轴上数值大于0的点替换成自定义的浮点数字<br>
+<img src="https://wangsnowchen.github.io/post-images/1711125597478.png" alt="" loading="lazy"><br>
+再将计算完毕的Y轴浮点数与其他两个轴合并成向量替换<code>P</code>属性<br>
+<img src="https://wangsnowchen.github.io/post-images/1711125714671.png" alt="" loading="lazy"></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[在Gaffer中实现Maya的CenterPivot功能]]></title>
+        <id>https://wangsnowchen.github.io/post/zai-gaffer-zhong-shi-xian-maya-de-centerpivot-gong-neng/</id>
+        <link href="https://wangsnowchen.github.io/post/zai-gaffer-zhong-shi-xian-maya-de-centerpivot-gong-neng/">
+        </link>
+        <updated>2024-03-22T15:33:30.000Z</updated>
+        <content type="html"><![CDATA[<p>核心节点是<code>BoundQuery</code><br>
+<img src="https://wangsnowchen.github.io/post-images/1711122155976.png" alt="" loading="lazy"><br>
+location这里的<code>${scene:path}</code>是内置的context变量，会自动识别层次结构中的最后一层<br>
+一般情况下求取的数值我们会以local space为主，如果有特殊需求，可以切换成世界坐标<br>
+通过拖拽将<code>${scene:path}</code>求出的BBox的<code>center</code>中心数值和<code>Transform</code>节点上<code>pivot</code>关联<br>
+即可将错误的轴心回归到模型的BBox中心<br>
+<img src="https://wangsnowchen.github.io/post-images/1711193891243.png" alt="" loading="lazy"></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[为不同的Primitive上创建不同的customString属性]]></title>
+        <id>https://wangsnowchen.github.io/post/wei-bu-tong-de-primitive-shang-chuang-jian-bu-tong-de-customstring-shu-xing/</id>
+        <link href="https://wangsnowchen.github.io/post/wei-bu-tong-de-primitive-shang-chuang-jian-bu-tong-de-customstring-shu-xing/">
+        </link>
+        <updated>2024-03-22T14:51:53.000Z</updated>
+        <content type="html"><![CDATA[<p>code解析</p>
+<p>首先通过</p>
+<pre><code class="language-python">getattribute(&quot;shading:index&quot;, index)
+</code></pre>
+<p>获取了物体点的index数值并将其赋给了变量<code>index</code>（类似Houdini的ptnum）<br>
+然后定义了一个空字符串</p>
+<pre><code class="language-python">string_out = &quot;&quot;
+</code></pre>
+<p>这里在对<code>int_list</code>定义时，使用python脚本进行预处理。将你输入的点求出一个总数，方便之后循环中做判断<br>
+<img src="https://wangsnowchen.github.io/post-images/1711120104827.png" alt="" loading="lazy"></p>
+<pre><code class="language-python">indices = parent[&quot;OSLCode2&quot;][&quot;parameters&quot;][&quot;int_list&quot;]
+parent[&quot;OSLCode2&quot;][&quot;parameters&quot;][&quot;array_length&quot;] = len(indices.split(&quot;,&quot;))
+</code></pre>
+<p>之后对<code>int_list</code>进行了判断，如果<code>int_list</code>不为空，就执行下面的逻辑。</p>
+<pre><code class="language-python">	string int_array[50];
+	split( int_list, int_array, &quot;,&quot; );
+	int start_index, end_index;
+	start_index = stoi(int_array[0]);
+	for (int n=start_index; n&lt;array_length; n++){
+		string cur_index = int_array[n];
+		if (stoi(cur_index) == index){
+			string_out = test_string;
+		}
+	}
+</code></pre>
+<p><code>int_list</code>是一个字符串，通过逗号分隔的整数列表。<br>
+接着定义了一个名为<code>int_array</code>的字符串数组，长度为50。<br>
+使用split函数将<code>int_list</code>按逗号分隔并存储到<code>int_array</code>中。接下来定义了<code>start_index、end_index</code>以及<code>n</code>等变量。<br>
+通过循环遍历<code>int_array</code>中的整数，并将其转换为索引值，然后与index进行比较。如果找到匹配的索引值，就将<code>test_string</code>赋给<code>string_out</code><br>
+这样，当你在<code>int_list</code>填写对应的primitive Inspector 序号数值的时候，就可以为其赋上<code>test_string</code>的数值<br>
+<img src="https://wangsnowchen.github.io/post-images/1711120753129.png" alt="" loading="lazy"></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Use Gaffer OSL to create dynamic model noise effects with customizable orientation]]></title>
+        <id>https://wangsnowchen.github.io/post/use-gaffer-osl-to-create-dynamic-model-noise-effects-with-customizable-orientation/</id>
+        <link href="https://wangsnowchen.github.io/post/use-gaffer-osl-to-create-dynamic-model-noise-effects-with-customizable-orientation/">
+        </link>
+        <updated>2024-03-21T13:35:10.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="use-gaffer-osl-to-create-dynamic-model-noise-effects-with-customizable-orientation">Use Gaffer OSL to create dynamic model noise effects with customizable orientation.</h1>
+<figure data-type="image" tabindex="1"><img src="https://wangsnowchen.github.io/post-images/1711028245263.gif" alt="" loading="lazy"></figure>
+<p>The inspiration came when I was using VOP to connect nodes in houdini and realized that there are nodes similar to AA noise in the OSL section in Gaffer, 'PointNoise'.</p>
+<figure data-type="image" tabindex="2"><img src="https://wangsnowchen.github.io/post-images/1711028307495.png" alt="" loading="lazy"></figure>
+<p>So I made the whole noise move with time by doing a noise process on the X and Z vectors of the P attribute and replacing the Y vector with a Time float in Global.</p>
+<figure data-type="image" tabindex="3"><img src="https://wangsnowchen.github.io/post-images/1711028319445.png" alt="" loading="lazy"></figure>
+<p>Then control the area where the noise is generated by doing a Remap on the Y vector on the P attribute alone.</p>
+<figure data-type="image" tabindex="4"><img src="https://wangsnowchen.github.io/post-images/1711028337314.png" alt="" loading="lazy"></figure>
+<p>This is then added to the default P property to get the effect we want.<br>
+<img src="https://wangsnowchen.github.io/post-images/1711028346000.png" alt="" loading="lazy"></p>
+]]></content>
+    </entry>
+</feed>
