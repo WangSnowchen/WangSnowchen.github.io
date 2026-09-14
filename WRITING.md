@@ -2,18 +2,52 @@
 
 只管写内容。格式、高亮、索引、部署都是自动的。
 
+## 新机器上准备一次
+
+需要 **Node 22**（CI 用的就是这个版本）和 git。
+
+```bash
+git clone https://github.com/WangSnowchen/WangSnowchen.github.io.git
+cd WangSnowchen.WangSnowchen.github.io
+
+# 提交身份。不配的话 git 会回退成 用户名@主机名.local 这种邮箱，
+# GitHub 认不出来，提交不会关联到你的账号，还会把机器名公开出去
+git config user.name  "WangSnowchen"
+git config user.email "WangSnowchen@users.noreply.github.com"
+
+npm ci
+```
+
+推送需要认证：配 SSH key，或者建一个 personal access token 当密码用。
+
 ## 发一篇新文章
 
 ```bash
-cp templates/post.md src/content/posts/你的文件名.md
+# 1. 从最新的 main 开一个分支
+git switch main && git pull
+git switch -c post/文章名
+
+# 2. 复制模板。文件名会变成网址：foo-bar.md → /post/foo-bar/
+cp templates/post.md src/content/posts/文件名.md
+
+# 3. 改 frontmatter、写正文。图片放进 public/images/，
+#    正文里用 /images/文件名 引用
+
+# 4. 本地先自查，一秒出结果，不用等 CI
+npm run check:content
+
+# 5. 提交推送
+git add -A
+git commit -m "新文章：文章标题"
+git push -u origin post/文章名
 ```
 
-1. 改 frontmatter，写正文
-2. 图片丢进 `public/images/`，正文里用 `/images/文件名` 引用
-3. 提交，开 PR
-4. 等自动检查变绿，合并 —— 部署和搜索索引都会自动跑
+推送后 GitHub 会给出开 PR 的链接，点进去建 PR 即可。
 
-PR 上的检查会告诉你哪里写错了，不用等部署完上网站才发现。
+**PR 上会自动跑一遍完整构建**（内容检查 → 构建 → 核对产物 → 建索引），
+变绿就合并。合并进 `main` 后自动部署到 Pages，搜索索引一并重建。
+
+一次改多篇文章也一样，都放在同一个分支里就行。
 
 ## frontmatter
 
