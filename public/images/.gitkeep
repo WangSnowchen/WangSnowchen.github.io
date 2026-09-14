@@ -1,0 +1,2 @@
+# 占位文件。git 不跟踪空目录，没有它的话 clone 之后 public/images/ 不存在，
+# 往这里放图会报 No such file or directory。

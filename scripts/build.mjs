@@ -97,6 +97,22 @@ function renderedText(html) {
 
 const countOccurrences = (text, needle) => text.split(needle).length - 1;
 
+/**
+ * 清掉 public/ 带进来的 .gitkeep。
+ *
+ * 它是给 git 占位用的（git 不跟踪空目录，没有它 clone 之后 public/images/ 不存在），
+ * 属于仓库的事，不该跟着发布出去。但 Astro 会把 public/ 原样拷进 dist/，
+ * 所以只能在构建完成之后自己扫一遍。
+ */
+function stripPlaceholders(dir) {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+
+    if (entry.isDirectory()) stripPlaceholders(full);
+    else if (entry.name === '.gitkeep') rmSync(full, { force: true });
+  }
+}
+
 // ==========================================================================
 // 2.5 核对产物
 // ==========================================================================
@@ -197,6 +213,8 @@ if (build.output.includes('[ERROR]')) {
 }
 
 // —— 2.5 核对产物 ——
+stripPlaceholders(DIST_DIR);
+
 const failures = verifyRendered();
 if (failures.length) {
   console.error(`\n✗ 产物核对没通过，共 ${failures.length} 处：\n`);
