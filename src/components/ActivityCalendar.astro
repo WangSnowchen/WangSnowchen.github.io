@@ -1,0 +1,170 @@
+---
+/**
+ * 类 GitHub 的活动日历。
+ *
+ * 窗口锚点的取舍：GitHub 固定显示「最近 12 个月」，因为它假设你一直在提交。
+ * 但博客可能长期停更——若末篇文章早于一年前，这个窗口会整片空白，看不出任何信息。
+ * 所以这里做了自适应：末篇文章在半年内就锚定到今天（与 GitHub 一致），
+ * 否则锚定到末篇文章，保证网格里能看到真实的活动记录。
+ */
+interface Props {
+  dates: Date[];
+  /** 超过这么多天没更新，就把窗口锚定到末篇文章而非今天 */
+  dormantAfterDays?: number;
+  /** 紧凑模式：更小的格子，用于首页右上角等窄容器 */
+  compact?: boolean;
+  title?: string;
+}
+
+const { dates, dormantAfterDays = 180, compact = false, title = '活跃度' } = Astro.props;
+
+const DAY_MS = 86_400_000;
+const WEEKS = 53;
+
+const utcKey = (d: Date) => d.toISOString().slice(0, 10);
+
+// 按 UTC 归集每天的篇数，与站内日期显示口径保持一致
+const counts = new Map<string, number>();
+for (const d of dates) {
+  const k = utcKey(d);
+  counts.set(k, (counts.get(k) ?? 0) + 1);
+}
+
+const now = new Date();
+const todayUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+
+const lastPostUTC = dates.length
+  ? Math.max(...dates.map((d) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())))
+  : todayUTC;
+
+const isDormant = (todayUTC - lastPostUTC) / DAY_MS > dormantAfterDays;
+const endUTC = isDormant ? lastPostUTC : todayUTC;
+
+// 回溯到周一起始，保证每列都是完整的周一→周日
+const start = new Date(endUTC - (WEEKS - 1) * 7 * DAY_MS);
+const startDow = (start.getUTCDay() + 6) % 7; // 距周一的天数
+start.setUTCDate(start.getUTCDate() - startDow);
+
+type Cell = { key: string; label: string; count: number; level: number };
+
+const weeks: Cell[][] = [];
+const monthLabels: { label: string; span: number }[] = [];
+
+const cursor = new Date(start);
+let lastMonth = -1;
+
+for (let w = 0; w < WEEKS; w++) {
+  const week: Cell[] = [];
+
+  for (let d = 0; d < 7; d++) {
+    const key = utcKey(cursor);
+    const count = counts.get(key) ?? 0;
+
+    // 有 1 篇就跳到 level 2，避免单篇几乎看不见
+    const level = count === 0 ? 0 : Math.min(4, count + 1);
+
+    week.push({
+      key,
+      label: `${key} · ${count} 篇`,
+      count,
+      level,
+    });
+
+    // 月份标签：以每周第一天所在的月份为准
+    if (d === 0) {
+      const m = cursor.getUTCMonth();
+      if (m !== lastMonth) {
+        monthLabels.push({
+          label: `${m + 1}月`,
+          span: 1,
+        });
+        lastMonth = m;
+      } else if (monthLabels.length) {
+        monthLabels[monthLabels.length - 1].span += 1;
+      }
+    }
+
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+
+  weeks.push(week);
+}
+
+// 首尾的半截月份只占 1~2 列，放不下文字。保留占位列以免后续标签错位，
+// 但不渲染文字——这类残缺标签比没有标签更难看。
+const MIN_LABEL_SPAN = 3;
+
+const activeDays = [...counts.keys()].length;
+const maxCount = counts.size ? Math.max(...counts.values()) : 0;
+---
+
+<section class:list={['cal', compact && 'cal--compact']} aria-label={title}>
+  <div class="cal__head">
+    <h2 class="section__title">{title}</h2>
+    <span class="cal__summary">
+      {dates.length} 篇 · {activeDays} 天
+    </span>
+  </div>
+
+  <div class="cal__scroll">
+    <div class="cal__inner">
+      <!-- 月份标签：宽度按各自覆盖的周数分配，与下方网格对齐 -->
+      <div class="cal__months" aria-hidden="true">
+        <span class="cal__gutter" />
+        <div class="cal__month-track">
+          {
+            monthLabels.map((m) => (
+              // 容器是 grid，必须用 grid-column 跨列；flex 在这里无效
+              <span class="cal__month" style={`grid-column: span ${m.span}`}>
+                {m.span >= MIN_LABEL_SPAN ? m.label : ''}
+              </span>
+            ))
+          }
+        </div>
+      </div>
+
+      <div class="cal__body">
+        <div class="cal__weekdays" aria-hidden="true">
+          <span>一</span>
+          <span />
+          <span>三</span>
+          <span />
+          <span>五</span>
+          <span />
+          <span>日</span>
+        </div>
+
+        <div class="cal__grid">
+          {
+            weeks.map((week) =>
+              week.map((cell) => (
+                <span
+                  class={`cal__cell cal__cell--${cell.level}`}
+                  data-tip={cell.label}
+                  title={cell.label}
+                />
+              ))
+            )
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cal__legend">
+    <span>{isDormant ? '截至末篇文章' : '最近 12 个月'}</span>
+    <span class="cal__legend-scale">
+      <span>少</span>
+      <span class="cal__cell cal__cell--0" />
+      <span class="cal__cell cal__cell--2" />
+      <span class="cal__cell cal__cell--3" />
+      <span class="cal__cell cal__cell--4" />
+      <span>多</span>
+    </span>
+    {
+      maxCount > 0 && (
+        <span class="cal__legend-max">单日最多 {maxCount} 篇</span>
+      )
+    }
+  </div>
+</section>

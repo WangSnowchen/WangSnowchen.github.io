@@ -1,0 +1,210 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
+import Giscus from '../../components/Giscus.astro';
+import { formatDate } from '../../utils/date';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+
+const published = formatDate(post.data.date);
+
+// 粗略估算阅读时长：正文按中英文分别计字
+const raw = post.body ?? '';
+const cjk = (raw.match(/[一-龥]/g) ?? []).length;
+const words = (raw.match(/[A-Za-z0-9]+/g) ?? []).length;
+const minutes = Math.max(1, Math.round((cjk / 350 + words / 200) || 1));
+---
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+  <div class="page">
+    <div class="post-layout">
+      <!-- data-pagefind-body：只把这个 article 交给 Pagefind 建索引，
+           于是首页/归档/标签这些列表页不会挤进搜索结果里。 -->
+      <article data-pagefind-body>
+        <header class="post-header">
+          <div class="post-header__eyebrow">
+            <time datetime={post.data.date.toISOString()}>{published}</time>
+            <span class="post-meta__dot" />
+            <span>{minutes} 分钟阅读</span>
+          </div>
+
+          {/* 搜出来的标题用这个，而不是让 Pagefind 去猜页面里的第一个 h1 */}
+          <h1 class="post-header__title" data-pagefind-meta="title">{post.data.title}</h1>
+
+          {post.data.description && <p class="post-header__desc">{post.data.description}</p>}
+
+          {
+            post.data.tags.length > 0 && (
+              <ul class="tag-list">
+                {post.data.tags.map((tag) => (
+                  <li>
+                    <a class="tag" href={`/tags/${tag}`}>
+                      {tag}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )
+          }
+        </header>
+
+        {
+          post.data.cover && (
+            <figure class="post-cover" data-pagefind-ignore>
+              <img src={post.data.cover} alt={post.data.title} />
+            </figure>
+          )
+        }
+
+        {/* 移动端：折叠式目录（目录是标题的复述，建索引时排除，避免污染搜索结果） */}
+        <TableOfContents headings={headings} collapsible />
+
+        <div class="prose">
+          <Content />
+        </div>
+
+        <Giscus />
+
+        <nav class="post-nav" aria-label="文章导航" data-pagefind-ignore>
+          <a class="post-nav__item" href="/">
+            <span class="post-nav__label">返回</span>
+            <span class="post-nav__title">全部文章</span>
+          </a>
+        </nav>
+      </article>
+
+      {/* 桌面端：常驻侧边目录 */}
+      <TableOfContents headings={headings} />
+    </div>
+  </div>
+
+  <button class="to-top" type="button" id="to-top" aria-label="回到顶部" title="回到顶部">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 19V5"></path>
+      <path d="M5 12l7-7 7 7"></path>
+    </svg>
+  </button>
+</BaseLayout>
+
+<script>
+  import mediumZoom from 'medium-zoom';
+
+  // —— 图片点击放大 ——
+  // 排除对比图：点它应该是拖动滑块，而不是弹出一张大图盖住整个对比
+  const images = document.querySelectorAll<HTMLImageElement>('.prose img:not(.compare__img)');
+  if (images.length) {
+    mediumZoom(images, {
+      margin: 24,
+      background: 'transparent',
+      scrollOffset: 0,
+    });
+  }
+
+  // —— AB 对比图滑块 ——
+  for (const root of document.querySelectorAll<HTMLElement>('[data-compare]')) {
+    const stage = root.querySelector<HTMLElement>('.compare__stage');
+    const handle = root.querySelector<HTMLElement>('.compare__handle');
+    if (!stage || !handle) continue;
+
+    let dragging = false;
+
+    const setPos = (percent: number) => {
+      const clamped = Math.min(100, Math.max(0, percent));
+      stage.style.setProperty('--compare-pos', `${clamped}%`);
+      handle.setAttribute('aria-valuenow', String(Math.round(clamped)));
+    };
+
+    const percentFromX = (clientX: number) => {
+      const rect = stage.getBoundingClientRect();
+      return rect.width ? ((clientX - rect.left) / rect.width) * 100 : 50;
+    };
+
+    // 整块图都能拖，不必非得抓住中间那根细线
+    stage.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0) return;
+      dragging = true;
+      stage.setPointerCapture(event.pointerId);
+      setPos(percentFromX(event.clientX));
+    });
+
+    stage.addEventListener('pointermove', (event) => {
+      if (dragging) setPos(percentFromX(event.clientX));
+    });
+
+    // 移动端纵向滚动时浏览器会发 pointercancel，这里顺势收手，
+    // 配合 CSS 的 touch-action: pan-y，页面上下滑动不会被滑块吃掉
+    const stop = (event: PointerEvent) => {
+      if (!dragging) return;
+      dragging = false;
+      if (stage.hasPointerCapture(event.pointerId)) stage.releasePointerCapture(event.pointerId);
+    };
+    stage.addEventListener('pointerup', stop);
+    stage.addEventListener('pointercancel', stop);
+
+    // 键盘：焦点在滑块上时用方向键微调，Shift 加速，Home/End 到两端
+    handle.addEventListener('keydown', (event) => {
+      const step = event.shiftKey ? 10 : 2;
+      const current = Number(handle.getAttribute('aria-valuenow')) || 50;
+
+      if (event.key === 'Home' || event.key === 'End') {
+        event.preventDefault();
+        setPos(event.key === 'Home' ? 0 : 100);
+        return;
+      }
+
+      const delta = event.key === 'ArrowLeft' ? -step : event.key === 'ArrowRight' ? step : 0;
+      if (!delta) return;
+      event.preventDefault();
+      setPos(current + delta);
+    });
+  }
+
+  // —— 阅读进度 ——
+  const bar = document.getElementById('reading-progress');
+  const article = document.querySelector<HTMLElement>('.prose');
+  if (bar && article) {
+    const update = () => {
+      const rect = article.getBoundingClientRect();
+      const scrolled = -rect.top;
+      const total = rect.height - window.innerHeight;
+      const ratio = total > 0 ? Math.min(1, Math.max(0, scrolled / total)) : 0;
+      bar.style.width = `${ratio * 100}%`;
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update, { passive: true });
+  }
+
+  // —— 回到顶部 ——
+  const toTop = document.getElementById('to-top');
+  if (toTop) {
+    // 翻过一屏才出现：刚进文章时顶上就是标题，用不着它
+    const toggleToTop = () => {
+      toTop.classList.toggle('to-top--on', window.scrollY > window.innerHeight);
+    };
+    toggleToTop();
+    window.addEventListener('scroll', toggleToTop, { passive: true });
+
+    // 故意不传 behavior，让它走 html 上的 scroll-behavior: smooth ——
+    // 那条规则已经被 prefers-reduced-motion 覆盖成 auto 了，偏好自动生效
+    toTop.addEventListener('click', () => window.scrollTo({ top: 0 }));
+  }
+</script>

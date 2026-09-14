@@ -1,0 +1,129 @@
+---
+export interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings: Heading[];
+  /** 只收录该深度以下的标题（h2 起） */
+  minDepth?: number;
+  maxDepth?: number;
+  title?: string;
+  /** 作为 <details> 折叠块渲染（移动端） */
+  collapsible?: boolean;
+}
+
+const {
+  headings,
+  minDepth = 2,
+  maxDepth = 3,
+  title = '目录',
+  collapsible = false,
+} = Astro.props;
+
+// 排除自动生成的脚注标题；去掉 rehype-autolink-headings 追加到文本末尾的锚点符号
+const items = headings
+  .filter((h) => h.depth >= minDepth && h.depth <= maxDepth && h.slug !== 'footnote-label')
+  .map((h) => ({ ...h, text: h.text.replace(/#+$/, '').trim() }));
+---
+
+{
+  items.length > 1 && (
+    <nav class={collapsible ? '' : 'toc'} aria-label="文章目录" data-pagefind-ignore>
+      {!collapsible && <p class="toc__title">{title}</p>}
+      <ul class="toc__list" data-toc-list>
+        {!collapsible && <span class="toc__indicator" data-toc-indicator aria-hidden="true" />}
+        {items.map((h) => (
+          <li>
+            <a
+              class:list={['toc__link', `toc__link--depth-${h.depth}`]}
+              href={`#${h.slug}`}
+              data-toc-link
+              data-depth={h.depth}
+            >
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+{
+  collapsible && items.length > 1 && (
+    <details class="toc-mobile">
+      <summary>{title}</summary>
+      <nav aria-label="文章目录">
+        <ul class="toc__list">
+          {items.map((h) => (
+            <li>
+              <a class="toc__link" href={`#${h.slug}`}>
+                {h.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </details>
+  )
+}
+
+<script>
+  // 滚动高亮：用 IntersectionObserver 追踪当前可视的标题，
+  // 配合左侧指示条做平滑移动。
+  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]'));
+  if (links.length) {
+    const indicator = document.querySelector<HTMLElement>('[data-toc-indicator]');
+    const list = document.querySelector<HTMLElement>('[data-toc-list]');
+    const targets = links
+      .map((link) => document.getElementById(decodeURIComponent(link.hash.slice(1))))
+      .filter((el): el is HTMLElement => el !== null);
+
+    let activeId: string | null = null;
+
+    const setActive = (id: string) => {
+      if (id === activeId) return;
+      activeId = id;
+
+      let activeLink: HTMLAnchorElement | null = null;
+      for (const link of links) {
+        const isActive = decodeURIComponent(link.hash.slice(1)) === id;
+        link.classList.toggle('is-active', isActive);
+        if (isActive) activeLink = link;
+      }
+
+      // 把指示条移动到当前项的位置
+      if (indicator && activeLink && list) {
+        const listRect = list.getBoundingClientRect();
+        const linkRect = activeLink.getBoundingClientRect();
+        indicator.style.height = `${linkRect.height}px`;
+        indicator.style.transform = `translateY(${linkRect.top - listRect.top + list.scrollTop}px)`;
+      }
+    };
+
+    // 记录每个标题的可见状态，取最靠上的那个作为当前项
+    const visible = new Map<string, boolean>();
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          visible.set(entry.target.id, entry.isIntersecting);
+        }
+        const firstVisible = targets.find((el) => visible.get(el.id));
+        // 都不可见时（例如滚到文章末尾），保留最后一个标题为激活态
+        if (firstVisible) setActive(firstVisible.id);
+      },
+      {
+        // 顶部留出头部高度，底部收窄，让高亮切换更贴近阅读位置
+        rootMargin: '-88px 0px -70% 0px',
+        threshold: 0,
+      }
+    );
+
+    targets.forEach((el) => observer.observe(el));
+    if (targets[0]) setActive(targets[0].id);
+  }
+</script>

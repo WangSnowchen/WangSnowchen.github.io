@@ -1,0 +1,66 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { formatMonthDay, yearOf } from '../utils/date';
+
+const posts = (await getCollection('posts')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+// 按年份分组，保持倒序
+const byYear = new Map<number, typeof posts>();
+for (const post of posts) {
+  const year = yearOf(post.data.date);
+  const bucket = byYear.get(year);
+  if (bucket) bucket.push(post);
+  else byYear.set(year, [post]);
+}
+
+const years = [...byYear.entries()].sort((a, b) => b[0] - a[0]);
+---
+
+<BaseLayout title="归档" description="全部文章按时间归档">
+  <div class="page">
+    <header class="page-header">
+      <h1 class="page-header__title">归档</h1>
+      <p class="page-header__desc">
+        共 {posts.length} 篇文章，按时间倒序排列。
+      </p>
+    </header>
+
+    {
+      years.map(([year, items]) => (
+        <section class="archive-group">
+          <h2 class="archive-group__year">
+            {year}
+            <span class="archive-group__count">{items.length}</span>
+          </h2>
+
+          <ul class="archive-list">
+            {items.map((post) => (
+              <li class="archive-item">
+                <a class="archive-item__link" href={`/post/${post.id}/`}>
+                  <time class="archive-item__date" datetime={post.data.date.toISOString()}>
+                    {formatMonthDay(post.data.date)}
+                  </time>
+                  <span class="archive-item__title">{post.data.title}</span>
+                  <span class="archive-item__tags">
+                    {post.data.tags.map((tag) => (
+                      <span class="tag">{tag}</span>
+                    ))}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+
+    {
+      posts.length === 0 && (
+        <p style="color:var(--text-tertiary)">还没有文章。</p>
+      )
+    }
+  </div>
+</BaseLayout>

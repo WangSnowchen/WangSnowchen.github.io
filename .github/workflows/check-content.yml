@@ -1,0 +1,29 @@
+name: Check content
+
+# 只在动到文章或图片的 PR 上跑，改样式、改模板不触发
+on:
+  pull_request:
+    paths:
+      - 'src/content/**'
+      - 'public/images/**'
+      - 'scripts/**'
+      - 'src/plugins/**'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      # npm run build 里依次做：内容检查 → Astro 构建 → 核对产物 → 建索引。
+      # 任何一步有问题都会以非 0 退出，PR 上直接变红，并把原因打在日志里。
+      - name: 检查内容并试构建
+        run: npm run build

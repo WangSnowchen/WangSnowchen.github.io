@@ -1,0 +1,27 @@
+{
+  "name": "cgwiki",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "node scripts/build.mjs",
+    "preview": "astro preview",
+    "check": "astro check",
+    "check:content": "node scripts/check-content.mjs"
+  },
+  "dependencies": {
+    "astro": "^5.0.0",
+    "medium-zoom": "^1.1.0",
+    "rehype-autolink-headings": "^7.1.0",
+    "rehype-slug": "^6.0.0"
+  },
+  "allowScripts": {
+    "esbuild@0.27.7": true,
+    "esbuild@0.25.12": true,
+    "sharp@0.34.5": true
+  },
+  "devDependencies": {
+    "pagefind": "^1.5.2"
+  }
+}

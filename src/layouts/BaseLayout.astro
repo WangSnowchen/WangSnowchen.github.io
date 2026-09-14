@@ -1,0 +1,105 @@
+---
+import '../styles/global.css';
+import BackgroundFX from '../components/BackgroundFX.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = '个人知识笔记' } = Astro.props;
+const siteName = 'CGWiKi';
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title === siteName ? siteName : `${title} · ${siteName}`}</title>
+
+    {/* 尽早设置主题，避免刷新时闪白（FOUC） */}
+    <script is:inline>
+      (() => {
+        const stored = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = stored ?? (prefersDark ? 'dark' : 'light');
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+  </head>
+
+  <body>
+    <BackgroundFX />
+
+    <header class="site-header">
+      <div class="page site-header__inner">
+        <a class="brand" href="/">
+          <span class="brand__mark">CG</span>
+          <span>{siteName}</span>
+        </a>
+
+        <nav class="site-nav">
+          <a href="/">首页</a>
+          <a href="/tags">标签</a>
+          <a href="/archives">归档</a>
+          <a href="/about">关于</a>
+
+          <a class="icon-btn" href="/search" aria-label="搜索" title="搜索">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="M20 20l-4-4"></path>
+            </svg>
+          </a>
+
+          <button class="theme-toggle" type="button" id="theme-toggle" aria-label="切换明暗主题">
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="4"></circle>
+              <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+            </svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
+            </svg>
+          </button>
+        </nav>
+      </div>
+
+      {/* 阅读进度条。放在顶栏内部，跟着顶栏一起吸附，只有文章页的脚本会驱动它 */}
+      <div class="read-progress" aria-hidden="true">
+        <div class="read-progress__bar" id="reading-progress"></div>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="page site-footer__inner">
+        <span>© {new Date().getFullYear()} CGWiKi · 个人知识笔记</span>
+        <span>
+          <a href="https://github.com/WangSnowchen" target="_blank" rel="noopener">GitHub</a>
+          ·
+          <a href="https://weibo.com/henzhu" target="_blank" rel="noopener">微博</a>
+          ·
+          <a href="https://www.zhihu.com/people/henzhu" target="_blank" rel="noopener">知乎</a>
+        </span>
+      </div>
+    </footer>
+
+    <script>
+      const toggle = document.getElementById('theme-toggle');
+      toggle?.addEventListener('click', () => {
+        const root = document.documentElement;
+        const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+        root.dataset.theme = next;
+        localStorage.setItem('theme', next);
+        // 通知跟随主题的组件（如 giscus 评论）
+        window.dispatchEvent(new CustomEvent('themechange', { detail: next }));
+      });
+    </script>
+  </body>
+</html>

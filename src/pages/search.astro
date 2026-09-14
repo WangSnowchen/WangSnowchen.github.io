@@ -1,0 +1,104 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="搜索" description="全文搜索站内文章">
+  <div class="page">
+    <header class="page-header">
+      <h1 class="page-header__title">搜索</h1>
+      <p class="page-header__desc">检索全部文章的正文内容。</p>
+    </header>
+
+    <div id="search" class="search" />
+
+    <p id="search-fallback" class="search__fallback" hidden>
+      搜索索引还没生成。索引由 <code>npm run build</code> 在打包后建立，
+      <code>npm run dev</code> 下不可用——用构建产物预览，或等部署上线后再试。
+    </p>
+  </div>
+</BaseLayout>
+
+<script>
+  // Pagefind 的产物（页面 + 索引）只在 build 之后才存在，
+  // dev 下 /pagefind/* 必然 404。所以这里运行时加载，失败就换成一行说明，
+  // 而不是在页面上留一个点了没反应的搜索框。
+  const CSS_HREF = '/pagefind/pagefind-ui.css';
+  const JS_SRC = '/pagefind/pagefind-ui.js';
+
+  const container = document.getElementById('search');
+  const fallback = document.getElementById('search-fallback');
+
+  function loadCSS(href: string) {
+    return new Promise<void>((resolve, reject) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      link.onload = () => resolve();
+      link.onerror = () => reject(new Error(href));
+      document.head.appendChild(link);
+    });
+  }
+
+  function loadJS(src: string) {
+    return new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error(src));
+      document.head.appendChild(script);
+    });
+  }
+
+  interface PagefindUIOptions {
+    element: string;
+    showSubResults?: boolean;
+    showImages?: boolean;
+    translations?: Record<string, string>;
+  }
+
+  async function mount() {
+    if (!container) return;
+
+    try {
+      await Promise.all([loadCSS(CSS_HREF), loadJS(JS_SRC)]);
+    } catch {
+      container.hidden = true;
+      if (fallback) fallback.hidden = false;
+      return;
+    }
+
+    const PagefindUI = (window as unknown as { PagefindUI?: new (o: PagefindUIOptions) => unknown })
+      .PagefindUI;
+
+    if (typeof PagefindUI !== 'function') {
+      container.hidden = true;
+      if (fallback) fallback.hidden = false;
+      return;
+    }
+
+    new PagefindUI({
+      element: '#search',
+      showSubResults: true,
+      showImages: false,
+      translations: {
+        placeholder: '搜索文章…',
+        zero_results: '没有找到与「[SEARCH_TERM]」相关的内容',
+        one_result: '找到 [COUNT] 条结果',
+        many_results: '找到 [COUNT] 条结果',
+        searching: '搜索中…',
+      },
+    });
+
+    // 支持从别处带参跳进来，例如首页的搜索框转成 /search?q=xxx
+    const query = new URLSearchParams(location.search).get('q');
+    if (query) {
+      const input = container.querySelector<HTMLInputElement>('input[type="search"], input');
+      if (input) {
+        input.value = query;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    }
+  }
+
+  mount();
+</script>

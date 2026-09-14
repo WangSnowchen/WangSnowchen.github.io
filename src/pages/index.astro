@@ -1,0 +1,131 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ActivityCalendar from '../components/ActivityCalendar.astro';
+import { formatDate } from '../utils/date';
+
+const posts = (await getCollection('posts')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+// 标签云：统计每个标签的文章数，按热度排序
+const tagCounts = new Map<string, number>();
+for (const post of posts) {
+  for (const tag of post.data.tags) {
+    tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+  }
+}
+const tags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+
+const lastUpdated = posts[0]?.data.date;
+
+const socials = [
+  { label: 'GitHub', href: 'https://github.com/WangSnowchen' },
+  { label: '知乎', href: 'https://www.zhihu.com/people/henzhu' },
+  { label: '微博', href: 'https://weibo.com/henzhu' },
+];
+---
+
+<BaseLayout title="CGWiKi">
+  <div class="page">
+    <div class="hero-grid">
+    <!-- Hero：交代“这是什么地方”，不绑定具体技术栈 -->
+    <section class="hero">
+      <h1 class="hero__title">个人知识笔记</h1>
+
+      <p class="hero__desc">
+        记录技术实践中的推导过程、踩过的坑，以及最后是怎么解决的。不做教程化的简化，
+        尽量保留完整的思考路径。
+      </p>
+
+      <div class="hero__links">
+        {
+          socials.map((s) => (
+            <a class="hero__link" href={s.href} target="_blank" rel="noopener">
+              {s.label}
+            </a>
+          ))
+        }
+      </div>
+
+      <p class="hero__meta">
+        共 {posts.length} 篇 · 最后更新 {lastUpdated ? formatDate(lastUpdated) : '—'}
+      </p>
+    </section>
+
+      <!-- 活跃度日历：放在首屏右侧 -->
+      <ActivityCalendar dates={posts.map((p) => p.data.date)} compact />
+    </div>
+
+    <!-- 文章列表：首页的主体 -->
+    <section class="section" style="margin-top:64px">
+      <div class="section__head">
+        <h2 class="section__title">文章</h2>
+        <a class="section__more" href="/archives">
+          归档 →
+        </a>
+      </div>
+
+      <ul class="post-list">
+        {
+          posts.map((post) => (
+            <li class="post-row">
+              <a class="post-row__link" href={`/post/${post.id}/`}>
+                <time class="post-row__date" datetime={post.data.date.toISOString()}>
+                  {formatDate(post.data.date)}
+                </time>
+
+                <div>
+                  <h3 class="post-row__title">{post.data.title}</h3>
+                  {post.data.description && (
+                    <p class="post-row__desc">{post.data.description}</p>
+                  )}
+                  <ul class="tag-list">
+                    {post.data.tags.map((tag) => (
+                      <li>
+                        <span class="tag">{tag}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {post.data.cover ? (
+                  <div class="post-row__thumb">
+                    <img src={post.data.cover} alt="" loading="lazy" />
+                  </div>
+                ) : (
+                  <div class="post-row__thumb post-row__thumb--empty" />
+                )}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- 标签 -->
+    {
+      tags.length > 0 && (
+        <section class="section">
+          <div class="section__head">
+            <h2 class="section__title">标签</h2>
+            <a class="section__more" href="/tags">
+              查看全部 →
+            </a>
+          </div>
+
+          <ul class="tag-cloud">
+            {tags.map(([name, count]) => (
+              <li>
+                <a class="tag" href={`/tags/${name}`}>
+                  {name}
+                  <span class="tag-cloud__count">{count}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+  </div>
+</BaseLayout>

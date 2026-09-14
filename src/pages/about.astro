@@ -1,0 +1,29 @@
+---
+import { getEntry, render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const entry = await getEntry('pages', 'about');
+
+if (!entry) {
+  throw new Error('缺少关于页内容：请在 src/content/pages/about.md 中创建。');
+}
+
+const { Content } = await render(entry);
+---
+
+<BaseLayout title={entry.data.title} description={entry.data.description}>
+  <div class="page">
+    <div class="page-layout">
+      <article>
+        <header class="page-header">
+          <h1 class="page-header__title">{entry.data.title}</h1>
+          {entry.data.description && <p class="page-header__desc">{entry.data.description}</p>}
+        </header>
+
+        <div class="prose">
+          <Content />
+        </div>
+      </article>
+    </div>
+  </div>
+</BaseLayout>

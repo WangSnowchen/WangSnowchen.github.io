@@ -1,0 +1,43 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const posts = await getCollection('posts');
+
+const counts = new Map<string, number>();
+for (const post of posts) {
+  for (const tag of post.data.tags) {
+    counts.set(tag, (counts.get(tag) ?? 0) + 1);
+  }
+}
+
+const tags = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+---
+
+<BaseLayout title="标签" description="按标签浏览文章">
+  <div class="page">
+    <header class="page-header">
+      <h1 class="page-header__title">标签</h1>
+      <p class="page-header__desc">
+        共 {tags.length} 个标签，覆盖 {posts.length} 篇文章。
+      </p>
+    </header>
+
+    <ul class="tag-grid">
+      {
+        tags.map(([name, count]) => (
+          <li>
+            <a class="tag-card" href={`/tags/${name}`}>
+              <span class="tag-card__name">{name}</span>
+              <span class="tag-card__count">{count} 篇</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    {
+      tags.length === 0 && <p style="color:var(--text-tertiary)">还没有标签。</p>
+    }
+  </div>
+</BaseLayout>

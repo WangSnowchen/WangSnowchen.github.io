@@ -1,0 +1,85 @@
+---
+/**
+ * giscus 评论区（GitHub Discussions）。
+ *
+ * 主题同步的做法：giscus 跑在 iframe 里，读不到本站的 localStorage，
+ * 它的 data-theme 在脚本执行那一刻就固定了。所以这里不靠 data-theme，
+ * 而是等 iframe 就绪后通过 postMessage 下发当前主题，并监听本站的 themechange 事件持续跟随。
+ */
+import { giscus, isGiscusConfigured } from '../config';
+---
+
+{
+  isGiscusConfigured ? (
+    <section class="comments" aria-label="评论">
+      <div class="giscus" />
+
+      {/* is:inline：外链脚本交给浏览器直接加载，不要让 Astro 尝试打包 */}
+      <script
+        is:inline
+        src="https://giscus.app/client.js"
+        data-repo={giscus.repo}
+        data-repo-id={giscus.repoId}
+        data-category={giscus.category}
+        data-category-id={giscus.categoryId}
+        data-mapping={giscus.mapping}
+        data-strict="0"
+        data-reactions-enabled={giscus.reactionsEnabled}
+        data-emit-metadata="0"
+        data-input-position={giscus.inputPosition}
+        data-theme="preferred_color_scheme"
+        data-lang={giscus.lang}
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async
+      />
+    </section>
+  ) : (
+    import.meta.env.DEV && (
+      <section class="comments comments--pending">
+        <p>
+          评论区已接好，但还缺两个 ID。<code>src/config.ts</code> 里的{' '}
+          <code>repoId</code> 和 <code>categoryId</code> 为空，去{' '}
+          <a href="https://giscus.app" target="_blank" rel="noopener">
+            giscus.app
+          </a>{' '}
+          按注释里的步骤生成后填上即可。
+        </p>
+      </section>
+    )
+  )
+}
+
+<script>
+  const ORIGIN = 'https://giscus.app';
+
+  function currentTheme() {
+    return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+  }
+
+  const container = document.querySelector('.giscus');
+
+  if (container) {
+    // giscus 初始化完成前 postMessage 会被丢掉，所以先等它主动发一条消息过来。
+    let ready = false;
+
+    const sync = () => {
+      if (!ready) return;
+      container.querySelector('iframe.giscus-frame')?.contentWindow?.postMessage(
+        { giscus: { setConfig: { theme: currentTheme() } } },
+        ORIGIN
+      );
+    };
+
+    window.addEventListener('message', (event) => {
+      if (event.origin !== ORIGIN) return;
+      if (typeof event.data !== 'object' || !event.data?.giscus) return;
+      ready = true;
+      sync();
+    });
+
+    // 切换主题时 iframe 可能还没加载（懒加载 + 在页面底部），
+    // 这种同步失败没关系：ready 变 true 时那次 sync 会补上当前主题。
+    window.addEventListener('themechange', sync);
+  }
+</script>

@@ -1,0 +1,2 @@
+# 占位文件。git 不跟踪空目录，没有它的话 clone 和 CI 上 src/content/posts/ 会不存在，
+# 构建脚本的 readdirSync 会直接报 ENOENT。文章写进来之后可以删掉。

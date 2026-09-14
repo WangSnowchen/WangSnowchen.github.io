@@ -1,0 +1,203 @@
+---
+/**
+ * 背景特效层
+ *
+ * 程序化点阵：每个点是一个独立的“采样点”，鼠标附近形成一个影响域，
+ * 域内的点被推离光标并放大、染上强调色 —— 类似一次 falloff 驱动的位移。
+ * 主题切换时重新读取 CSS 变量取色，无需重绘逻辑。
+ */
+---
+
+<div class="bg-layer" aria-hidden="true">
+  <canvas class="bg-canvas" id="bg-canvas"></canvas>
+  <div class="bg-glow" id="bg-glow"></div>
+</div>
+
+<script>
+  const canvas = document.getElementById('bg-canvas') as HTMLCanvasElement | null;
+  const glow = document.getElementById('bg-glow');
+  const layer = canvas?.parentElement;
+
+  if (canvas && glow && layer) {
+    const ctx = canvas.getContext('2d');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const hasPointer = window.matchMedia('(pointer: fine)').matches;
+
+    // —— 可调参数 ——
+    const SPACING = 30; // 点阵间距
+    const INFLUENCE = 170; // 影响域半径
+    const BASE_RADIUS = 1; // 静息点半径
+    const MAX_RADIUS = 2.8; // 影响域中心点半径
+    const PUSH = 16; // 最大位移距离
+
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let width = 0;
+    let height = 0;
+
+    // 取色
+    type RGB = [number, number, number];
+    const parseColor = (value: string): RGB | null => {
+      const s = value.trim();
+      if (!s) return null;
+      if (s.startsWith('#')) {
+        const hex = s.slice(1);
+        const full = hex.length === 3 ? hex.split('').map((c) => c + c).join('') : hex;
+        if (full.length < 6) return null;
+        return [
+          parseInt(full.slice(0, 2), 16),
+          parseInt(full.slice(2, 4), 16),
+          parseInt(full.slice(4, 6), 16),
+        ];
+      }
+      const m = s.match(/rgba?\(([^)]+)\)/);
+      if (m) {
+        const p = m[1].split(',').map((v) => parseFloat(v));
+        return [p[0], p[1], p[2]];
+      }
+      return null;
+    };
+
+    let accent: RGB = [176, 74, 47];
+    let base: RGB = [142, 142, 150];
+
+    const readColors = () => {
+      const cs = getComputedStyle(document.documentElement);
+      accent = parseColor(cs.getPropertyValue('--accent')) ?? accent;
+      base = parseColor(cs.getPropertyValue('--text-tertiary')) ?? base;
+    };
+    readColors();
+
+    // 指针状态：目标位置 + 缓动后的当前位置，做出轻微的拖尾感
+    let targetX = -9999;
+    let targetY = -9999;
+    let curX = -9999;
+    let curY = -9999;
+    let pointerActive = false;
+
+    const resize = () => {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = layer.clientWidth;
+      height = layer.clientHeight;
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx?.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    const draw = () => {
+      if (!ctx) return;
+      ctx.clearRect(0, 0, width, height);
+
+      const cols = Math.ceil(width / SPACING) + 1;
+      const rows = Math.ceil(height / SPACING) + 1;
+
+      // 静息点：合并成一条路径一次性填充，省掉逐点开销
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(${base[0]}, ${base[1]}, ${base[2]}, 0.5)`;
+
+      const reached: Array<[number, number, number]> = [];
+
+      for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+          const x = i * SPACING;
+          const y = j * SPACING;
+
+          if (pointerActive) {
+            const dx = x - curX;
+            const dy = y - curY;
+            const dist = Math.hypot(dx, dy);
+
+            if (dist < INFLUENCE) {
+              // 二次衰减，边缘过渡更柔和
+              const t = 1 - dist / INFLUENCE;
+              const falloff = t * t;
+              const inv = dist > 0.001 ? 1 / dist : 0;
+              // 沿远离光标的方向推开
+              const px = x + dx * inv * PUSH * falloff;
+              const py = y + dy * inv * PUSH * falloff;
+              const r = BASE_RADIUS + (MAX_RADIUS - BASE_RADIUS) * falloff;
+              reached.push([px, py, r]);
+              continue;
+            }
+          }
+
+          ctx.moveTo(x, y);
+          ctx.arc(x, y, BASE_RADIUS, 0, Math.PI * 2);
+        }
+      }
+      ctx.fill();
+
+      // 影响域内的点：单独上色，透明度随距离衰减
+      for (const [px, py, r] of reached) {
+        const d = Math.hypot(px - curX, py - curY);
+        const t = Math.max(0, 1 - d / INFLUENCE);
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(${accent[0]}, ${accent[1]}, ${accent[2]}, ${0.15 + 0.6 * t})`;
+        ctx.arc(px, py, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 光晕跟随
+      glow.style.transform = `translate3d(${curX}px, ${curY}px, 0)`;
+    };
+
+    const tick = () => {
+      // 缓动逼近目标位置
+      curX += (targetX - curX) * 0.12;
+      curY += (targetY - curY) * 0.12;
+      draw();
+      raf = requestAnimationFrame(tick);
+    };
+
+    let raf = 0;
+
+    const onMove = (e: PointerEvent) => {
+      targetX = e.clientX;
+      targetY = e.clientY;
+      if (!pointerActive) {
+        // 首次进入时直接落位，避免从屏幕外滑入
+        curX = targetX;
+        curY = targetY;
+        pointerActive = true;
+        glow.style.opacity = '1';
+      }
+    };
+
+    const onLeave = () => {
+      pointerActive = false;
+      glow.style.opacity = '0';
+      targetX = -9999;
+      targetY = -9999;
+      curX = -9999;
+      curY = -9999;
+    };
+
+    resize();
+
+    if (reduceMotion || !hasPointer) {
+      // 降级：只画一次静态点阵，不启动动画循环
+      pointerActive = false;
+      draw();
+    } else {
+      window.addEventListener('pointermove', onMove, { passive: true });
+      document.addEventListener('pointerleave', onLeave);
+      window.addEventListener('resize', () => {
+        resize();
+      });
+      // 标签页不可见时停掉循环，别空转烧电
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          cancelAnimationFrame(raf);
+          raf = 0;
+        } else if (!raf) {
+          raf = requestAnimationFrame(tick);
+        }
+      });
+      raf = requestAnimationFrame(tick);
+    }
+
+    window.addEventListener('themechange', readColors);
+    window.addEventListener('resize', resize);
+  }
+</script>
