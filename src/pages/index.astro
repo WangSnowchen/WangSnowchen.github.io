@@ -17,6 +17,14 @@ for (const post of posts) {
 }
 const tags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 
+// 总字数：中英分开数，口径和文章页的阅读时长一致。含代码块，是个粗估
+const totalWords = posts.reduce((sum, post) => {
+  const raw = post.body ?? '';
+  const cjk = (raw.match(/[一-龥]/g) ?? []).length;
+  const words = (raw.match(/[A-Za-z0-9]+/g) ?? []).length;
+  return sum + cjk + words;
+}, 0);
+
 const lastUpdated = posts[0]?.data.date;
 
 const socials = [
@@ -24,108 +32,153 @@ const socials = [
   { label: '知乎', href: 'https://www.zhihu.com/people/henzhu' },
   { label: '微博', href: 'https://weibo.com/henzhu' },
 ];
+
+// 本站技术栈。放在右栏是技术博客的老传统 —— 自证这是个技术人的站
+const stack = [
+  { label: 'Astro', href: 'https://astro.build' },
+  { label: 'Pagefind', href: 'https://pagefind.app' },
+  { label: 'GitHub Pages', href: 'https://pages.github.com' },
+];
 ---
 
 <BaseLayout title="CGWiKi">
   <div class="page">
     <div class="hero-grid">
-    <!-- Hero：交代“这是什么地方”，不绑定具体技术栈 -->
-    <section class="hero">
-      <h1 class="hero__title">个人知识笔记</h1>
+      <!-- Hero：交代“这是什么地方”，不绑定具体技术栈 -->
+      <section class="hero">
+        <h1 class="hero__title">个人知识笔记</h1>
 
-      <p class="hero__desc">
-        记录技术实践中的推导过程、踩过的坑，以及最后是怎么解决的。不做教程化的简化，
-        尽量保留完整的思考路径。
-      </p>
+        <p class="hero__desc">
+          记录技术实践中的推导过程、踩过的坑，以及最后是怎么解决的。不做教程化的简化，
+          尽量保留完整的思考路径。
+        </p>
 
-      <div class="hero__links">
-        {
-          socials.map((s) => (
-            <a class="hero__link" href={s.href} target="_blank" rel="noopener">
-              {s.label}
-            </a>
-          ))
-        }
-      </div>
+        <div class="hero__links">
+          {
+            socials.map((s) => (
+              <a class="hero__link" href={s.href} target="_blank" rel="noopener">
+                {s.label}
+              </a>
+            ))
+          }
+        </div>
+      </section>
 
-      <p class="hero__meta">
-        共 {posts.length} 篇 · 最后更新 {lastUpdated ? formatDate(lastUpdated) : '—'}
-      </p>
-    </section>
-
-      <!-- 活跃度日历：放在首屏右侧 -->
+      <!-- 活跃度日历：留在首屏右侧，不进右栏 -->
       <ActivityCalendar dates={posts.map((p) => p.data.date)} compact />
     </div>
 
-    <!-- 文章列表：首页的主体 -->
-    <section class="section" style="margin-top:64px">
-      <div class="section__head">
-        <h2 class="section__title">文章</h2>
-        <a class="section__more" href="/archives">
-          归档 →
-        </a>
-      </div>
-
-      <ul class="post-list">
-        {
-          posts.map((post) => (
-            <li class="post-row">
-              <a class="post-row__link" href={`/post/${post.id}/`}>
-                <time class="post-row__date" datetime={post.data.date.toISOString()}>
-                  {formatDate(post.data.date)}
-                </time>
-
-                <div>
-                  <h3 class="post-row__title">{post.data.title}</h3>
-                  {post.data.description && (
-                    <p class="post-row__desc">{post.data.description}</p>
-                  )}
-                  <ul class="tag-list">
-                    {post.data.tags.map((tag) => (
-                      <li>
-                        <span class="tag">{tag}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {post.data.cover ? (
-                  <div class="post-row__thumb">
-                    <img src={post.data.cover} alt="" loading="lazy" />
-                  </div>
-                ) : (
-                  <div class="post-row__thumb post-row__thumb--empty" />
-                )}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </section>
-
-    <!-- 标签 -->
-    {
-      tags.length > 0 && (
-        <section class="section">
+    <!-- 主列 + 右栏。主列只放文章列表，其余的收进右栏，
+         免得所有东西都堆在一条中轴线上、两侧空掉 -->
+    <div class="home-layout">
+      <div class="home-main">
+        <section class="section" style="margin-top:0">
           <div class="section__head">
-            <h2 class="section__title">标签</h2>
-            <a class="section__more" href="/tags">
-              查看全部 →
+            <h2 class="section__title">文章</h2>
+            <a class="section__more" href="/archives">
+              归档 →
             </a>
           </div>
 
-          <ul class="tag-cloud">
-            {tags.map(([name, count]) => (
-              <li>
-                <a class="tag" href={`/tags/${name}`}>
-                  {name}
-                  <span class="tag-cloud__count">{count}</span>
-                </a>
-              </li>
-            ))}
+          <ul class="post-list">
+            {
+              posts.map((post) => (
+                <li class="post-row">
+                  <a class="post-row__link" href={`/post/${post.id}/`}>
+                    <time class="post-row__date" datetime={post.data.date.toISOString()}>
+                      {formatDate(post.data.date)}
+                    </time>
+
+                    <div>
+                      <h3 class="post-row__title">{post.data.title}</h3>
+                      {post.data.description && (
+                        <p class="post-row__desc">{post.data.description}</p>
+                      )}
+                      <ul class="tag-list">
+                        {post.data.tags.map((tag) => (
+                          <li>
+                            <span class="tag">{tag}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {post.data.cover ? (
+                      <div class="post-row__thumb">
+                        <img src={post.data.cover} alt="" loading="lazy" />
+                      </div>
+                    ) : (
+                      <div class="post-row__thumb post-row__thumb--empty" />
+                    )}
+                  </a>
+                </li>
+              ))
+            }
           </ul>
         </section>
-      )
-    }
+      </div>
+
+      <aside class="home-side" aria-label="站点信息">
+        {
+          tags.length > 0 && (
+            <section class="side-block">
+              <h2 class="side-block__title">
+                <a href="/tags">标签</a>
+              </h2>
+              <ul class="side-tags">
+                {tags.map(([name, count]) => (
+                  <li>
+                    <a class="side-tags__link" href={`/tags/${name}`}>
+                      <span>{name}</span>
+                      <span class="side-tags__count">{count}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
+
+        <section class="side-block">
+          <h2 class="side-block__title">统计</h2>
+          <dl class="side-stats">
+            <div>
+              <dt>文章</dt>
+              <dd>{posts.length}</dd>
+            </div>
+            <div>
+              <dt>标签</dt>
+              <dd>{tags.length}</dd>
+            </div>
+            <div>
+              <dt>字数</dt>
+              <dd>约 {totalWords.toLocaleString('zh-CN')}</dd>
+            </div>
+            <div>
+              <dt>最后更新</dt>
+              <dd>{lastUpdated ? formatDate(lastUpdated) : '—'}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="side-block">
+          <h2 class="side-block__title">本站</h2>
+          <ul class="side-links">
+            {
+              stack.map((item) => (
+                <li>
+                  <a href={item.href} target="_blank" rel="noopener">
+                    {item.label}
+                  </a>
+                </li>
+              ))
+            }
+            <li>
+              <a href="/rss.xml">RSS</a>
+            </li>
+          </ul>
+        </section>
+      </aside>
+    </div>
   </div>
 </BaseLayout>

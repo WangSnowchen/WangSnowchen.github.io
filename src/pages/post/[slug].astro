@@ -4,16 +4,26 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import TableOfContents from '../../components/TableOfContents.astro';
 import Giscus from '../../components/Giscus.astro';
 import { formatDate } from '../../utils/date';
+import { findRelated } from '../../utils/related';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('posts');
-  return posts.map((post) => ({
+  const posts = (await getCollection('posts')).sort(
+    (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+  );
+
+  return posts.map((post, index) => ({
     params: { slug: post.id },
-    props: { post },
+    props: {
+      // 数组按日期倒序，所以 index - 1 是更新的一篇
+      newer: posts[index - 1] ?? null,
+      older: posts[index + 1] ?? null,
+      related: findRelated(post, posts),
+      post,
+    },
   }));
 }
 
-const { post } = Astro.props;
+const { post, newer, older, related } = Astro.props;
 const { Content, headings } = await render(post);
 
 const published = formatDate(post.data.date);
@@ -75,12 +85,56 @@ const minutes = Math.max(1, Math.round((cjk / 350 + words / 200) || 1));
 
         <Giscus />
 
-        <nav class="post-nav" aria-label="文章导航" data-pagefind-ignore>
-          <a class="post-nav__item" href="/">
-            <span class="post-nav__label">返回</span>
-            <span class="post-nav__title">全部文章</span>
-          </a>
-        </nav>
+        {/* 上下篇。列表按日期倒序，older 是更早发的，newer 是更新的。
+            两边都没有（全站只有一篇）时整个不渲染 —— 否则只剩一条孤零零的上边框。
+            只有一边时留个空 span 占位，免得那一项被拉伸成整行 */}
+        {
+          (older || newer) && (
+            <nav class="post-nav" aria-label="文章导航" data-pagefind-ignore>
+              {older ? (
+                <a class="post-nav__item" href={`/post/${older.id}/`}>
+                  <span class="post-nav__label">← 上一篇</span>
+                  <span class="post-nav__title">{older.data.title}</span>
+                </a>
+              ) : (
+                <span />
+              )}
+
+              {newer ? (
+                <a class="post-nav__item post-nav__item--next" href={`/post/${newer.id}/`}>
+                  <span class="post-nav__label">下一篇 →</span>
+                  <span class="post-nav__title">{newer.data.title}</span>
+                </a>
+              ) : (
+                <span />
+              )}
+            </nav>
+          )
+        }
+
+        {
+          related.length > 0 && (
+            <section class="related" data-pagefind-ignore>
+              <h2 class="related__title">相关文章</h2>
+              <ul class="related__list">
+                {related.map((item) => (
+                  <li>
+                    <a class="related__link" href={`/post/${item.id}/`}>
+                      <span class="related__name">{item.data.title}</span>
+                      <time class="related__date" datetime={item.data.date.toISOString()}>
+                        {formatDate(item.data.date)}
+                      </time>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
+
+        <p class="post-nav__all" data-pagefind-ignore>
+          <a href="/archives">全部文章 →</a>
+        </p>
       </article>
 
       {/* 桌面端：常驻侧边目录 */}
@@ -174,6 +228,45 @@ const minutes = Math.max(1, Math.round((cjk / 350 + words / 200) || 1));
       if (!delta) return;
       event.preventDefault();
       setPos(current + delta);
+    });
+  }
+
+  // —— 代码块复制 ——
+  // 按钮由 JS 生成，而不是构建时写死：没有 JS 时不留一个点了没反应的假按钮，
+  // 选中复制这条路照常可用。
+  for (const block of document.querySelectorAll<HTMLElement>('.code-block')) {
+    const pre = block.querySelector('pre');
+    if (!pre) continue;
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'code-copy';
+    button.textContent = '复制';
+    button.setAttribute('aria-label', '复制代码');
+
+    // 挂在外壳上而不是 pre 上 —— pre 会横向滚动，按钮得待在不滚的那一层
+    block.appendChild(button);
+
+    let reset = 0;
+
+    button.addEventListener('click', async () => {
+      // 取 code 里的文本，别拿 pre 的：Shiki 的输出里 pre 还可能带上装饰节点
+      const text = (pre.querySelector('code') ?? pre).textContent ?? '';
+
+      try {
+        await navigator.clipboard.writeText(text);
+        button.textContent = '已复制';
+        button.dataset.copied = '';
+      } catch {
+        // clipboard API 要安全上下文，非 https 打开时才会走到这里
+        button.textContent = '复制失败';
+      }
+
+      window.clearTimeout(reset);
+      reset = window.setTimeout(() => {
+        button.textContent = '复制';
+        delete button.dataset.copied;
+      }, 1600);
     });
   }
 

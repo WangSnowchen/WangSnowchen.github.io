@@ -29,6 +29,7 @@
   /* —— 度量 —— */
   --measure: 680px;
   --toc-width: 210px;
+  --side-width: 260px;
   --page-max: 1180px;
   --header-h: 64px;
 
@@ -701,6 +702,51 @@ iframe {
   background: color-mix(in srgb, var(--accent) 32%, transparent);
 }
 
+/* —— 代码块外壳与复制按钮 ——
+   外壳只当定位基准，横向滚动仍然在内部的 pre 上（原因见 rehype-wrap-code.mjs） */
+.code-block {
+  position: relative;
+}
+
+/* 按钮默认藏起来：每个代码块右上角都挂一个标签太吵。
+   悬停在代码块上、或用键盘 Tab 聚焦时才出现 */
+.code-copy {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.6;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.code-block:hover .code-copy,
+.code-copy:focus-visible {
+  opacity: 1;
+}
+
+.code-copy:hover,
+.code-copy[data-copied] {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* 触屏没有 hover，藏起来就等于永远看不见 */
+@media (pointer: coarse) {
+  .code-copy {
+    opacity: 1;
+  }
+}
+
 /* ==========================================================================
    侧边目录
    ========================================================================== */
@@ -819,6 +865,71 @@ iframe {
   text-align: right;
 }
 
+/* 上下篇下面那行「全部文章」 */
+.post-nav__all {
+  margin: 20px 0 0;
+  text-align: center;
+  font-size: 0.8125rem;
+}
+
+.post-nav__all a {
+  color: var(--text-tertiary);
+  transition: color 0.18s ease;
+}
+
+.post-nav__all a:hover {
+  color: var(--accent);
+}
+
+/* —— 相关文章 —— */
+.related {
+  margin-top: 48px;
+}
+
+.related__title {
+  margin: 0 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.related__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.related__link {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  transition: color 0.18s ease;
+}
+
+.related__link:hover {
+  color: var(--accent);
+}
+
+.related__name {
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.related__date {
+  flex: none;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+}
+
 /* ==========================================================================
    medium-zoom 覆盖层
    ========================================================================== */
@@ -912,10 +1023,134 @@ iframe {
 }
 
 /* —— 极小的统计行：不喧宾夺主 —— */
-.hero__meta {
-  margin-top: 20px;
+/* ==========================================================================
+   首页主列 + 右栏
+   ========================================================================== */
+
+/* 主列放文章列表，右栏放标签 / 统计 / 技术栈。
+   主列用 1fr 自己撑，不设限宽 —— 文章行是「日期 + 标题 + 摘要」的横向布局，
+   不像正文那样必须收窄才读得下去 */
+.home-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--side-width);
+  gap: 56px;
+  align-items: start;
+  margin-top: 64px;
+}
+
+/* 解除 .post-list 的限宽，但只限首页 —— 标签页是单栏，那里还留着 880px 的约束 */
+.home-main .post-list {
+  max-width: none;
+}
+
+.home-side {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.side-block__title {
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--text-tertiary);
+}
+
+.side-block__title a {
+  color: inherit;
+}
+
+.side-block__title a:hover {
+  color: var(--accent);
+}
+
+/* 竖排一行一个，比页面底部那块标签云紧凑得多 */
+.side-tags {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.side-tags__link {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  transition: color 0.18s ease;
+}
+
+.side-tags__link:hover {
+  color: var(--accent);
+}
+
+.side-tags__count {
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+}
+
+.side-stats {
+  margin: 0;
   font-size: 0.8125rem;
+}
+
+.side-stats > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 5px 0;
+}
+
+.side-stats dt {
+  color: var(--text-tertiary);
+}
+
+.side-stats dd {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.side-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.8125rem;
+}
+
+.side-links a {
+  display: block;
+  padding: 5px 0;
+  color: var(--text-secondary);
+  transition: color 0.18s ease;
+}
+
+.side-links a:hover {
+  color: var(--accent);
+}
+
+@media (max-width: 1080px) {
+  /* 窄屏右栏落到主列下面，横过来并排 */
+  .home-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 48px;
+  }
+
+  .home-side {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 32px;
+  }
 }
 
 /* ==========================================================================

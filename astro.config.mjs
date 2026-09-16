@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypeWrapTables from './src/plugins/rehype-wrap-tables.mjs';
+import rehypeWrapCode from './src/plugins/rehype-wrap-code.mjs';
 import remarkCompare from './src/plugins/remark-compare.mjs';
 import oslGrammar from './src/plugins/shiki-osl.mjs';
 
@@ -27,6 +28,7 @@ export default defineConfig({
     rehypePlugins: [
       rehypeSlug,
       rehypeWrapTables,
+      rehypeWrapCode,
       [
         rehypeAutolinkHeadings,
         {

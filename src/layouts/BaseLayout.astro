@@ -18,6 +18,13 @@ const siteName = 'CGWiKi';
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    {/* 让浏览器和阅读器能自动发现订阅源 */}
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title="CGWiKi"
+      href={new URL('rss.xml', Astro.site).href}
+    />
     <title>{title === siteName ? siteName : `${title} · ${siteName}`}</title>
 
     {/* 尽早设置主题，避免刷新时闪白（FOUC） */}
